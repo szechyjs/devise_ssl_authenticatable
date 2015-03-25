@@ -17,6 +17,14 @@ module Devise
           return success(dn)
         end
       end
+
+      def store?
+        false
+      end
+
+      def valid?
+        true
+      end
     end
   end
 end

@@ -9,5 +9,5 @@ module Devise
 
 end
 
-Devise.add_module(:ssl_authenticatable, :route => :session, :strategy => true,
-                  :controller => :sessions, :model => true)
+Devise.add_module(:ssl_authenticatable, strategy: true,
+                  model: true, no_input: true)
