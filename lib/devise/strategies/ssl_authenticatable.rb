@@ -2,19 +2,17 @@ require 'devise/strategies/authenticatable'
 
 module Devise
   module Strategies
+    #
+    # Strategy for signing in a user, based on a SSL certificate.
+    #
     class SslAuthenticatable < Authenticatable
       def authenticate!
-        $stdout.puts request.headers['X-SSL-Client-Verify']
-        if request.headers['X-SSL-Client-Verify'] != 'SUCCESS'
-          $stdout.puts 'invalid'
-          return fail(:invalid)
-        else
-          dn = request.headers['X-SSL-Client-DN']
-          issuer = request.headers['X-SSL-Issuer']
-          $stdout.puts dn
-          $stdout.puts issuer
-          $stdout.puts 'success'
-          return success(dn)
+        resource = mapping.to.find_for_ssl_authentication(authentication_hash)
+        return fail(:invalid_ssl) unless resource
+
+        if validate(resource)
+          resource.after_ssl_authentication
+          success!(resource)
         end
       end
 
@@ -23,7 +21,37 @@ module Devise
       end
 
       def valid?
-        true
+        super || valid_for_ssl_auth?
+      end
+
+      private
+
+      # Check if this strategy is valid for ssl authentication by:
+      #
+      #   * If the request contians valid SSL headers
+      #   * If all authentication keys are present
+      #
+      def valid_for_ssl_auth?
+        client_verify? && with_authentication_hash(:ssl_auth, ssl_auth_hash)
+      end
+
+      def ssl_auth_hash
+        { authentication_keys.first => client_dn }
+      end
+
+      # Does the request contain a valid SSL cert?
+      def client_verify?
+        request.headers['X-SSL-Client-Verify'] == 'SUCCESS'
+      end
+
+      # The DN of the client certificate
+      def client_dn
+        request.headers['X-SSL-Client-DN']
+      end
+
+      # Overwrite authentication keys to use ssl_client_dn_field.
+      def authentication_keys
+        @authentication_keys ||= [Devise::ssl_client_dn_field]
       end
     end
   end
