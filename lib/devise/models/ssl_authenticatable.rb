@@ -11,7 +11,7 @@ module Devise
         def find_for_ssl_authentication(authentication_hash)
           dn_field = ssl_client_dn_field.to_sym
           dn = authentication_hash[dn_field]
-          resource = find_for_authentication(dn_field => dn) || new(dn_field => dn)
+          resource = find_for_authentication(dn_field: dn) || new(dn_field: dn, email: authentication_hash[:email])
           resource
         end
 

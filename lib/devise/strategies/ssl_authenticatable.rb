@@ -36,17 +36,21 @@ module Devise
       end
 
       def ssl_auth_hash
-        { authentication_keys.first => client_dn }
+        { authentication_keys.first => client_dn, email: client_email }
       end
 
       # Does the request contain a valid SSL cert?
       def client_verify?
-        request.headers['X-SSL-Client-Verify'] == 'SUCCESS'
+        request.headers['puma.peercert'] || request.headers['X-SSL-Client-Verify'] == 'SUCCESS'
       end
 
       # The DN of the client certificate
       def client_dn
-        request.headers['X-SSL-Client-DN']
+        request.headers['puma.peercert'].subject.to_s
+      end
+
+      def client_email
+        request.headers['puma.peercert'].subject.to_s.match(/emailAddress=([^\/]*)/)[0]
       end
 
       # Overwrite authentication keys to use ssl_client_dn_field.
