@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'devise', '~> 4'
 
   spec.add_development_dependency "rails",  "~> 5"
-  spec.add_development_dependency "rspec-rails", "~> 3.7"
+  spec.add_development_dependency "rspec-rails", "~> 4.1"
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"
 end
